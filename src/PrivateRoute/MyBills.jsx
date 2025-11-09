@@ -1,11 +1,17 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContex";
+import autoTable from "jspdf-autotable";
+
+import jsPDF from "jspdf";
 
 export default function MyBills() {
   const { user } = useContext(AuthContext);
   const [myBills, setMyBills] = useState([]);
   const [editing, setEditing] = useState(null); // stores selected bill
   const [toDelete, setToDelete] = useState(null);
+
+  const totalBills = myBills.length;
+  const totalAmount = myBills.reduce((sum, b) => sum + Number(b.amount), 0);
 
   useEffect(() => {
     fetch(`http://localhost:3000/my-bills?email=${user.email}`)
@@ -53,9 +59,74 @@ export default function MyBills() {
       });
   };
 
+  const downloadReport = () => {
+    const doc = new jsPDF();
+
+    // Title & meta
+    doc.setFontSize(16);
+    doc.text("My Paid Bills Report", 14, 16);
+    doc.setFontSize(11);
+    doc.text(`Total Bills: ${totalBills}`, 14, 24);
+    doc.text(`Total Amount: ৳${totalAmount}`, 80, 24);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 32);
+
+    // Table
+    const columns = [
+      "#",
+      "Username",
+      "Email",
+      "Bill Title",
+      "Amount",
+      "Phone",
+      "Address",
+      "Date",
+    ];
+    const rows = myBills.map((b, i) => [
+      i + 1,
+      b.username || "",
+      b.email || "",
+      b.title || "", // include if you saved bill title on POST
+      Number(b.amount || 0),
+      b.phone || "",
+      b.address || "",
+      b.date || "",
+    ]);
+
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+      startY: 38,
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [0, 0, 0] },
+      columnStyles: { 4: { halign: "right" } }, // Amount right-aligned
+      foot: [
+        [
+          { content: "Totals", colSpan: 4 },
+          { content: `৳${totalAmount}`, styles: { halign: "right" } },
+          { content: "", colSpan: 3 },
+        ],
+      ],
+    });
+
+    doc.save("my-bills-report.pdf");
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-4">My Paid Bills</h1>
+      <div>
+        <div className="flex justify-between items-center bg-base-200 p-4 rounded-md shadow">
+          <p className="text-lg font-medium">
+            Total Bills Paid: <span className="font-bold">{totalBills}</span>
+          </p>
+          <p className="text-lg font-medium">
+            Total Amount: <span className="font-bold">৳ {totalAmount}</span>
+          </p>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={downloadReport}>
+          Download Report (PDF)
+        </button>
+      </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
