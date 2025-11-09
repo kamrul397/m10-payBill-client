@@ -5,7 +5,7 @@ import { AuthContext } from "../context/AuthContex";
 // assume you have `user` and `logout` from context
 
 export default function Navbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logOut } = useContext(AuthContext);
   return (
     <div className="bg-base-100 border-b">
       <div className="navbar max-w-6xl mx-auto">
@@ -39,7 +39,7 @@ export default function Navbar() {
                 </li>
               ) : (
                 <li>
-                  <button onClick={logout}>Logout</button>
+                  <button onClick={logOut}>Logout</button>
                 </li>
               )}
             </ul>
@@ -77,12 +77,14 @@ export default function Navbar() {
 
           {user ? (
             <>
-              <img
-                src={user.photoURL || ""}
-                alt="avatar"
-                className="w-9 h-9 rounded-full object-cover"
-              />
-              <button className="btn btn-sm" onClick={logout}>
+              <Link to="/userProfile" title={user.displayName || "Profile"}>
+                <img
+                  src={user.photoURL || "https://i.ibb.co/F4gJ0dG/user.png"}
+                  alt="avatar"
+                  className="w-9 h-9 rounded-full border cursor-pointer object-cover"
+                />
+              </Link>
+              <button className="btn btn-sm" onClick={logOut}>
                 Logout
               </button>
             </>

@@ -13,6 +13,7 @@ import PrivateRoute from "./PrivateRoute/PrivateRoute.jsx";
 import MyBills from "./PrivateRoute/MyBills";
 import BillDetails from "./PrivateRoute/BillDetails";
 import Bills from "./pages/Bills.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <BillDetails></BillDetails>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "userProfile",
+        element: (
+          <PrivateRoute>
+            <UserProfile></UserProfile>
           </PrivateRoute>
         ),
       },
