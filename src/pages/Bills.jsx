@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 export default function Bills() {
   const [bills, setBills] = useState([]);
   const [category, setCategory] = useState("");
-  console.log(bills._id);
 
   const fetchBills = () => {
     let url = "http://localhost:3000/bills";
