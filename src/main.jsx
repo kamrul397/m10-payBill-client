@@ -14,6 +14,7 @@ import MyBills from "./PrivateRoute/MyBills";
 import BillDetails from "./PrivateRoute/BillDetails";
 import Bills from "./pages/Bills.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
+import { Toaster } from "react-hot-toast";
 
 const router = createBrowserRouter([
   {
@@ -68,6 +69,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
+      <Toaster position="top-center" />
     </AuthProvider>
   </StrictMode>
 );

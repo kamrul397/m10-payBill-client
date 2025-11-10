@@ -1,30 +1,37 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 export default function Bills() {
   const [bills, setBills] = useState([]);
-  const [category, setCategory] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [category, setCategory] = useState(searchParams.get("category") || "");
 
   const fetchBills = () => {
     let url = "http://localhost:3000/bills";
-    if (category) url += `?category=${category}`;
+    if (category) url += `?category=${encodeURIComponent(category)}`;
     fetch(url)
-      .then((res) => res.json())
-      .then((data) => setBills(data));
+      .then((r) => r.json())
+      .then(setBills);
   };
 
   useEffect(() => {
     fetchBills();
   }, [category]);
 
+  // keep URL in sync when user changes dropdown
+  useEffect(() => {
+    if (category) setSearchParams({ category });
+    else setSearchParams({});
+  }, [category, setSearchParams]);
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-semibold text-center">All Bills</h1>
 
-      {/* Category Filter */}
       <div className="flex justify-center">
         <select
           className="select select-bordered w-full max-w-xs"
+          value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
           <option value="">All Categories</option>
@@ -35,13 +42,11 @@ export default function Bills() {
         </select>
       </div>
 
-      {/* Bill Cards */}
       <div className="grid md:grid-cols-3 gap-6">
         {bills.map((bill) => (
           <div key={bill._id} className="border p-4 rounded-lg shadow-sm">
             <img
               src={bill.image}
-              alt=""
               className="h-40 w-full object-cover rounded"
             />
             <h2 className="text-lg font-semibold mt-2">{bill.title}</h2>

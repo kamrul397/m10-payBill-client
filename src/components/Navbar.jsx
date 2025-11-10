@@ -6,6 +6,8 @@ import { AuthContext } from "../context/AuthContex";
 
 export default function Navbar() {
   const { user, logOut } = useContext(AuthContext);
+  console.log("USER:", user);
+
   return (
     <div className="bg-base-100 border-b">
       <div className="navbar max-w-6xl mx-auto">

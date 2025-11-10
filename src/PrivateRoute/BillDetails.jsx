@@ -1,13 +1,15 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContex";
+import toast from "react-hot-toast";
+import { Fade } from "react-awesome-reveal";
 
 export default function BillDetails() {
   const { user } = useContext(AuthContext);
-
   const { id } = useParams();
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paid, setPaid] = useState(false);
 
   useEffect(() => {
     fetch(`http://localhost:3000/bills/${id}`)
@@ -16,37 +18,56 @@ export default function BillDetails() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    fetch(`http://localhost:3000/my-bills?email=${user.email}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const alreadyPaid = data.find((b) => b.billsId === id);
+        if (alreadyPaid) setPaid(true);
+      });
+  }, [user.email, id]);
+
   if (loading) return <div className="p-6">Loading…</div>;
-  if (!bill || !bill._id) return <div className="p-6">Bill not found.</div>;
+  if (!bill) return <div className="p-6">Bill not found.</div>;
 
   const handlePay = (e) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
 
-    const payment = {
+    const newBill = {
       billsId: bill._id,
       username: form.get("username"),
-      address: form.get("address"),
+      email: user.email,
       phone: form.get("phone"),
-      email: user.email, // ✅ auto-filled
-      amount: bill.amount, // ✅ from details
-      date: bill.date, // ✅ keeps original bill month
+      address: form.get("address"),
+      amount: bill.amount,
+      date: new Date().toISOString().slice(0, 10),
+      title: bill.title,
     };
 
     fetch("http://localhost:3000/my-bills", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payment),
+      body: JSON.stringify(newBill),
     })
       .then((res) => res.json())
       .then(() => {
-        alert("Bill Paid Successfully ✅"); // later replace with toast
+        toast.success("✅ Payment Successful!");
+        setPaid(true);
         document.getElementById("payModal").close();
       });
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-3">
+    <div className="max-w-3xl mx-auto p-6 space-y-5">
+      {paid && (
+        <Fade duration={800}>
+          <div className="p-4 bg-green-100 border border-green-300 text-green-800 rounded-md text-center font-semibold">
+            🎉 Payment Successful!
+          </div>
+        </Fade>
+      )}
+
       <img
         src={bill.image}
         alt=""
@@ -58,63 +79,62 @@ export default function BillDetails() {
       <p>Amount: ৳ {bill.amount}</p>
       <p>Date: {bill.date}</p>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex items-center justify-center">
         <Link to="/bills" className="btn">
           Back to Bills
         </Link>
+
         <button
-          className="btn btn-primary mt-5"
+          disabled={paid}
+          className="btn btn-primary mt-3"
           onClick={() => document.getElementById("payModal").showModal()}
         >
-          Pay Bill
+          {paid ? "Already Paid" : "Pay Bill"}
         </button>
-
-        <dialog id="payModal" className="modal">
-          <div className="modal-box">
-            <h3 className="text-lg font-bold mb-3">Pay This Bill</h3>
-
-            <form onSubmit={handlePay} className="space-y-3">
-              <input
-                type="text"
-                value={user?.email}
-                readOnly
-                className="input input-bordered w-full"
-              />
-              <input
-                name="username"
-                placeholder="Your Name"
-                className="input input-bordered w-full"
-                required
-              />
-              <input
-                name="address"
-                placeholder="Your Address"
-                className="input input-bordered w-full"
-                required
-              />
-              <input
-                name="phone"
-                placeholder="Phone"
-                className="input input-bordered w-full"
-                required
-              />
-
-              <button className="btn btn-primary w-full">
-                Confirm Payment
-              </button>
-            </form>
-
-            <div className="modal-action">
-              <button
-                className="btn"
-                onClick={() => document.getElementById("payModal").close()}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </dialog>
       </div>
+
+      <dialog id="payModal" className="modal">
+        <div className="modal-box">
+          <h3 className="text-lg font-bold mb-3">Pay This Bill</h3>
+
+          <form onSubmit={handlePay} className="space-y-3">
+            <input
+              value={user.email}
+              readOnly
+              className="input input-bordered w-full"
+            />
+            <input
+              name="username"
+              placeholder="Your Name"
+              required
+              className="input input-bordered w-full"
+            />
+            <input
+              name="address"
+              placeholder="Your Address"
+              required
+              className="input input-bordered w-full"
+            />
+            <input
+              name="phone"
+              placeholder="Phone"
+              required
+              className="input input-bordered w-full"
+            />
+
+            <button className="btn btn-primary w-full">Confirm Payment</button>
+          </form>
+
+          <div className="modal-action">
+            <button
+              className="btn"
+              onClick={() => document.getElementById("payModal").close()}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </dialog>
     </div>
   );
 }
