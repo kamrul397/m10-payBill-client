@@ -112,129 +112,148 @@ export default function MyBills() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">My Paid Bills</h1>
-      <div>
-        <div className="flex justify-between items-center bg-base-200 p-4 rounded-md shadow">
-          <p className="text-lg font-medium">
-            Total Bills Paid: <span className="font-bold">{totalBills}</span>
-          </p>
-          <p className="text-lg font-medium">
-            Total Amount: <span className="font-bold">৳ {totalAmount}</span>
-          </p>
+    <div className=" p-6 space-y-6">
+      {/* Page Title */}
+      <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-6">
+        My Paid Bills
+      </h1>
+
+      {/* Summary Card */}
+      <div className="bg-base-100/80 backdrop-blur border border-base-300/60 rounded-xl shadow-sm p-5 flex flex-wrap justify-between items-center gap-4">
+        <div className="text-lg font-medium">
+          Total Bills Paid: <span className="font-bold">{totalBills}</span>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={downloadReport}>
+        <div className="text-lg font-medium">
+          Total Spent:{" "}
+          <span className="font-bold text-primary">৳ {totalAmount}</span>
+        </div>
+        <button
+          className="btn btn-primary rounded-full px-5"
+          onClick={downloadReport}
+        >
           Download Report (PDF)
         </button>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="table table-zebra w-full">
-          <thead>
+      <div className="overflow-x-auto bg-base-100/80 backdrop-blur border border-base-300/60 rounded-xl shadow-sm p-3">
+        <table className="table w-full">
+          <thead className="bg-base-200 text-sm">
             <tr>
               <th>#</th>
-              <th>Username</th>
+              <th>User</th>
               <th>Amount</th>
               <th>Phone</th>
               <th>Address</th>
               <th>Date</th>
-              <th>Actions</th>
+              <th className="text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {myBills.map((b, idx) => (
-              <tr key={b._id}>
+              <tr key={b._id} className="hover:bg-base-200/40 transition">
                 <td>{idx + 1}</td>
-                <td>{b.username}</td>
-                <td>৳ {b.amount}</td>
+                <td className="font-medium">{b.username}</td>
+                <td className="font-semibold text-primary">৳ {b.amount}</td>
                 <td>{b.phone}</td>
                 <td>{b.address}</td>
                 <td>{b.date}</td>
-                <td className="flex gap-2">
-                  <button
-                    className="btn btn-sm btn-info"
-                    onClick={() => setEditing(b)}
-                  >
-                    Update
-                  </button>
+                <td>
+                  <div className="flex justify-center gap-2">
+                    <button
+                      className="btn btn-info btn-xs rounded-full"
+                      onClick={() => setEditing(b)}
+                    >
+                      Update
+                    </button>
 
-                  <button
-                    className="btn btn-sm btn-error"
-                    onClick={() => setToDelete(b)}
-                  >
-                    Delete
-                  </button>
+                    <button
+                      className="btn btn-error btn-xs rounded-full"
+                      onClick={() => setToDelete(b)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {editing && (
-          <dialog id="editModal" open className="modal">
-            <div className="modal-box max-w-sm">
-              <h3 className="font-bold text-lg mb-3">Update Bill</h3>
-
-              <form onSubmit={(e) => handleUpdate(e)} className="space-y-3">
-                <input
-                  type="text"
-                  name="amount"
-                  defaultValue={editing.amount}
-                  className="input input-bordered w-full"
-                />
-                <input
-                  type="text"
-                  name="phone"
-                  defaultValue={editing.phone}
-                  className="input input-bordered w-full"
-                />
-                <input
-                  type="text"
-                  name="address"
-                  defaultValue={editing.address}
-                  className="input input-bordered w-full"
-                />
-                <input
-                  type="date"
-                  name="date"
-                  defaultValue={editing.date}
-                  className="input input-bordered w-full"
-                />
-
-                <button className="btn btn-primary w-full">Save Changes</button>
-              </form>
-
-              <div className="modal-action">
-                <button className="btn" onClick={() => setEditing(null)}>
-                  Close
-                </button>
-              </div>
-            </div>
-          </dialog>
-        )}
-        {toDelete && (
-          <dialog id="deleteModal" open className="modal">
-            <div className="modal-box max-w-sm">
-              <h3 className="font-bold text-lg">
-                Are you sure you want to delete this bill?
-              </h3>
-              <p className="py-2 text-sm opacity-80">
-                This action cannot be undone.
-              </p>
-
-              <div className="modal-action flex justify-end gap-3">
-                <button className="btn" onClick={() => setToDelete(null)}>
-                  Cancel
-                </button>
-                <button className="btn btn-error" onClick={handleDelete}>
-                  Confirm Delete
-                </button>
-              </div>
-            </div>
-          </dialog>
-        )}
       </div>
+
+      {/* Update Modal */}
+      {editing && (
+        <dialog open className="modal">
+          <div className="modal-box rounded-xl shadow-lg">
+            <h3 className="font-bold text-lg text-center mb-4">Update Bill</h3>
+
+            <form onSubmit={handleUpdate} className="space-y-3">
+              <input
+                name="amount"
+                defaultValue={editing.amount}
+                className="input input-bordered w-full rounded-md"
+              />
+              <input
+                name="phone"
+                defaultValue={editing.phone}
+                className="input input-bordered w-full rounded-md"
+              />
+              <input
+                name="address"
+                defaultValue={editing.address}
+                className="input input-bordered w-full rounded-md"
+              />
+              <input
+                name="date"
+                type="date"
+                defaultValue={editing.date}
+                className="input input-bordered w-full rounded-md"
+              />
+
+              <button className="btn btn-primary w-full rounded-full">
+                Save Changes
+              </button>
+            </form>
+
+            <div className="modal-action">
+              <button
+                className="btn btn-ghost rounded-full px-5"
+                onClick={() => setEditing(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* Delete Modal */}
+      {toDelete && (
+        <dialog open className="modal">
+          <div className="modal-box rounded-xl shadow-lg text-center">
+            <h3 className="font-bold text-lg mb-2">Delete Bill?</h3>
+            <p className="text-sm opacity-80 mb-4">
+              This action cannot be undone.
+            </p>
+
+            <div className="flex justify-center gap-3">
+              <button
+                className="btn btn-ghost rounded-full px-5"
+                onClick={() => setToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error rounded-full px-5"
+                onClick={handleDelete}
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }
