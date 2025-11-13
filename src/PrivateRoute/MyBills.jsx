@@ -3,6 +3,7 @@ import { AuthContext } from "../context/AuthContex";
 import autoTable from "jspdf-autotable";
 
 import jsPDF from "jspdf";
+import api from "../lib/api";
 
 export default function MyBills() {
   const { user } = useContext(AuthContext);
@@ -14,9 +15,9 @@ export default function MyBills() {
   const totalAmount = myBills.reduce((sum, b) => sum + Number(b.amount), 0);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/my-bills?email=${user.email}`)
-      .then((res) => res.json())
-      .then((data) => setMyBills(data));
+    api
+      .get("/my-bills", { params: { email: user.email } })
+      .then(({ data }) => setMyBills(data));
   }, [user.email]);
 
   const handleUpdate = (e) => {
@@ -30,33 +31,21 @@ export default function MyBills() {
       date: form.get("date"),
     };
 
-    fetch(`http://localhost:3000/my-bills/${editing._id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        // refresh list
-        setMyBills((prev) =>
-          prev.map((item) =>
-            item._id === editing._id ? { ...item, ...updated } : item
-          )
-        );
-        setEditing(null); // close modal
-      });
+    api.patch(`/my-bills/${editing._id}`, updated).then(() => {
+      setMyBills((prev) =>
+        prev.map((item) =>
+          item._id === editing._id ? { ...item, ...updated } : item
+        )
+      );
+      setEditing(null);
+    });
   };
 
   const handleDelete = () => {
-    fetch(`http://localhost:3000/my-bills/${toDelete._id}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then(() => {
-        // Remove from UI
-        setMyBills((prev) => prev.filter((item) => item._id !== toDelete._id));
-        setToDelete(null); // close modal
-      });
+    api.delete(`/my-bills/${toDelete._id}`).then(() => {
+      setMyBills((prev) => prev.filter((item) => item._id !== toDelete._id));
+      setToDelete(null);
+    });
   };
 
   const downloadReport = () => {

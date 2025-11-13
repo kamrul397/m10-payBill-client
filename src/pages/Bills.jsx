@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import api from "../lib/api";
 
 export default function Bills() {
   const [bills, setBills] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [category, setCategory] = useState(searchParams.get("category") || "");
 
-  const fetchBills = () => {
-    let url = "http://localhost:3000/bills";
-    if (category) url += `?category=${encodeURIComponent(category)}`;
-    fetch(url)
-      .then((r) => r.json())
-      .then(setBills);
+  const fetchBills = async () => {
+    const { data } = await api.get("/bills", {
+      params: category ? { category } : {},
+    });
+    setBills(data);
   };
-
   useEffect(() => {
     fetchBills();
   }, [category]);

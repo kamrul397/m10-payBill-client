@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContex";
 import toast from "react-hot-toast";
 import { Fade } from "react-awesome-reveal";
 import Loader from "../components/Loader";
+import api from "../lib/api";
 
 export default function BillDetails() {
   const { user } = useContext(AuthContext);
@@ -13,19 +14,17 @@ export default function BillDetails() {
   const [paid, setPaid] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/bills/${id}`)
-      .then((res) => res.json())
-      .then((data) => setBill(data))
+    api
+      .get(`/bills/${id}`)
+      .then(({ data }) => setBill(data))
       .finally(() => setLoading(false));
   }, [id]);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/my-bills?email=${user.email}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const alreadyPaid = data.find((b) => b.billsId === id);
-        if (alreadyPaid) setPaid(true);
-      });
+    api.get("/my-bills", { params: { email: user.email } }).then(({ data }) => {
+      const alreadyPaid = data.find((b) => b.billsId === id);
+      if (alreadyPaid) setPaid(true);
+    });
   }, [user.email, id]);
 
   if (loading) return <Loader></Loader>;
@@ -46,17 +45,14 @@ export default function BillDetails() {
       title: bill.title,
     };
 
-    fetch("http://localhost:3000/my-bills", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newBill),
-    })
-      .then((res) => res.json())
+    api
+      .post("/my-bills", newBill)
       .then(() => {
         toast.success("✅ Payment Successful!");
         setPaid(true);
         document.getElementById("payModal").close();
-      });
+      })
+      .catch((err) => toast.error(err));
   };
 
   return (

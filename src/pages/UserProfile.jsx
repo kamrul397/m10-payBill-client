@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 export default function UserProfile() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  console.log(user);
 
   const [name, setName] = useState(user?.displayName || "");
   const [photo, setPhoto] = useState(user?.photoURL || "");
@@ -16,18 +17,35 @@ export default function UserProfile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+
+    const trimmedName = name.trim();
+    const trimmedPhoto = photo.trim();
+
+    // 1) Validate empty fields
+    if (!trimmedName) {
+      return toast.error("Name cannot be empty ❌");
+    }
+
+    // 2) Check if values are unchanged
+    const noChanges =
+      trimmedName === (user.displayName || "") &&
+      trimmedPhoto === (user.photoURL || "");
+
+    if (noChanges) {
+      return toast.error("No changes were made ⚠️");
+    }
+
     try {
       setSaving(true);
+
       await updateProfile(user, {
-        displayName: name?.trim() || user.displayName || "",
-        photoURL: photo?.trim() || user.photoURL || "",
+        displayName: trimmedName,
+        photoURL: trimmedPhoto || null,
       });
 
-      // Refresh local Firebase user object so UI shows new values
       await user.reload();
-
       toast.success("Profile updated successfully ✅");
-      navigate("/userProfile", { replace: true });
+      navigate("/", { replace: true });
     } catch (err) {
       console.error(err);
       toast.error(err?.message || "Failed to update profile");

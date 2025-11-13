@@ -7,7 +7,7 @@ import ThemeToggle from "./ThemeToggle";
 // assume you have `user` and `logout` from context
 export default function Navbar() {
   const { user, logOut } = useContext(AuthContext);
-  console.log("USER:", user);
+  // console.log("USER:", user);
 
   return (
     <div className="sticky top-0 z-50 bg-base-100/80 backdrop-blur border-b border-base-300/60">

@@ -1,16 +1,50 @@
-# React + Vite
+# Utility Bill Management System (Client)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the **frontend** of the Utility Bill Management System, built with **React (Vite)**, **Firebase Authentication**, **TailwindCSS**, and **DaisyUI**.  
+Users can browse bills, pay bills, and manage their own payment history securely.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Live Preview
 
-## React Compiler
+Frontend URL: _Add after deployment_
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Backend API URL (from server deployment):
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## ✨ Features
+
+- User Authentication (Email/Password + Google Login)
+- View all bills with category filtering
+- View single bill details
+- Pay bill (current month only rule enforced)
+- My Bills page (only logged-in user's payments shown)
+- Update & Delete payments
+- Generate PDF report (jsPDF)
+- Modern UI with Tailwind + DaisyUI
+
+---
+
+## 🧰 Technologies Used
+
+| Layer              | Tools                   |
+| ------------------ | ----------------------- |
+| Frontend Framework | React + Vite            |
+| UI Styling         | TailwindCSS + DaisyUI   |
+| Auth               | Firebase Authentication |
+| Routing            | React Router            |
+| Notifications      | react-hot-toast         |
+| Animations         | react-awesome-reveal    |
+| PDF Export         | jsPDF + AutoTable       |
+
+---
+
+## 🔧 Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+cd client
+npm install
+```
