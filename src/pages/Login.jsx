@@ -1,9 +1,16 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContex";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { loginEmail, loginGoogle } = useContext(AuthContext);
+
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
   const [err, setErr] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [capsOn, setCapsOn] = useState(false);
@@ -12,27 +19,38 @@ export default function Login() {
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
 
+  const handleChange = (e) =>
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  /** Email Login */
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setErr("");
-    const form = new FormData(e.currentTarget);
-    const email = form.get("email");
-    const password = form.get("password");
 
     try {
-      await loginEmail(email, password);
+      await loginEmail(form.email, form.password);
+      toast.success("Logged in successfully 🎉");
+
+      // Clear the form
+      setForm({ email: "", password: "" });
+
       navigate(from, { replace: true });
     } catch (e) {
-      setErr("Invalid email or password");
+      const msg = e.message || "Login failed";
+      setErr(msg);
+      toast.error(msg);
     }
   };
 
+  /** Google Login */
   const handleGoogle = async () => {
     try {
       await loginGoogle();
+      toast.success("Logged in with Google 🎉");
       navigate(from, { replace: true });
     } catch {
       setErr("Google Login failed");
+      toast.error("Google Login failed");
     }
   };
 
@@ -47,10 +65,10 @@ export default function Login() {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 text-white"
-                viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                viewBox="0 0 24 24"
               >
                 <path d="M5 3l2 6-6 2 6 2-2 6 6-2 2 6 2-6 6 2-2-6 6-2-6-2 2-6-6 2-2-6-2 6-6-2z" />
               </svg>
@@ -59,7 +77,9 @@ export default function Login() {
             <p className="text-sm text-gray-600">Login to continue</p>
           </div>
 
+          {/* FORM */}
           <form onSubmit={handleEmailLogin} className="mt-6 space-y-4">
+            {/* Email */}
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-gray-700">
                 Email
@@ -67,12 +87,16 @@ export default function Login() {
               <input
                 name="email"
                 type="email"
+                value={form.email}
+                onChange={handleChange}
                 placeholder="you@example.com"
                 required
+                autoComplete="off"
                 className="input input-bordered w-full rounded-lg border-gray-200 focus:ring-4 focus:ring-indigo-100"
               />
             </label>
 
+            {/* Password */}
             <label className="block">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">
@@ -89,9 +113,12 @@ export default function Login() {
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Your password"
+                  value={form.password}
+                  onChange={handleChange}
                   required
+                  placeholder="Your password"
                   onKeyUp={(e) => setCapsOn(e.getModifierState("CapsLock"))}
+                  autoComplete="off"
                   className="input input-bordered w-full pr-12 rounded-lg border-gray-200 focus:ring-4 focus:ring-indigo-100"
                 />
 
@@ -127,12 +154,14 @@ export default function Login() {
               </div>
             </label>
 
+            {/* Error */}
             {err && (
               <p className="text-red-600 text-sm border border-red-200 bg-red-50 px-3 py-2 rounded-lg">
                 {err}
               </p>
             )}
 
+            {/* Login btn */}
             <button
               type="submit"
               className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white py-2.5 font-medium shadow-lg hover:shadow-xl active:scale-[.99] transition"
@@ -141,6 +170,7 @@ export default function Login() {
             </button>
           </form>
 
+          {/* Google Login */}
           <button
             onClick={handleGoogle}
             className="mt-4 w-full rounded-xl border border-indigo-200 py-2.5 font-medium hover:bg-indigo-50 transition flex items-center justify-center gap-2"

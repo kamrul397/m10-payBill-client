@@ -42,26 +42,22 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (user?.email) {
-          // Logged-in user → show their own recent bills
-          const { data } = await api.get("/my-bills", {
-            params: { email: user.email, limit: 5 },
-          });
-          setRecent(data);
-        } else {
-          // Public view → show global bills + categories
-          const { data } = await api.get("/bills");
-          setRecent(data.slice(0, 6));
-          setCategories([...new Set(data.map((b) => b.category))]);
-        }
+        const { data } = await api.get("/bills");
+
+        // Show 6 recent bills globally
+        setRecent(data.slice(0, 6));
+
+        // Extract categories
+        setCategories([...new Set(data.map((b) => b.category))]);
       } catch (err) {
         console.error("Error loading home data:", err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [user]);
+  }, []);
 
   return (
     <div className="p-6 space-y-16">
@@ -180,7 +176,7 @@ export default function Home() {
                   </p>
 
                   <Link
-                    to={`/bills/${bill.billsId || bill._id}`}
+                    to={`/bills/${bill._id}`}
                     className="btn btn-primary w-full rounded-full mt-3"
                   >
                     See Details

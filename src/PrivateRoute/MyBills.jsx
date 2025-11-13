@@ -4,6 +4,7 @@ import autoTable from "jspdf-autotable";
 
 import jsPDF from "jspdf";
 import api from "../lib/api";
+import toast from "react-hot-toast";
 
 export default function MyBills() {
   const { user } = useContext(AuthContext);
@@ -25,20 +26,51 @@ export default function MyBills() {
     const form = new FormData(e.currentTarget);
 
     const updated = {
-      amount: form.get("amount"),
-      phone: form.get("phone"),
-      address: form.get("address"),
+      amount: form.get("amount")?.trim(),
+      phone: form.get("phone")?.trim(),
+      address: form.get("address")?.trim(),
       date: form.get("date"),
     };
 
-    api.patch(`/my-bills/${editing._id}`, updated).then(() => {
-      setMyBills((prev) =>
-        prev.map((item) =>
-          item._id === editing._id ? { ...item, ...updated } : item
-        )
-      );
-      setEditing(null);
-    });
+    // 1️⃣ Check empty fields
+    if (
+      !updated.amount ||
+      !updated.phone ||
+      !updated.address ||
+      !updated.date
+    ) {
+      toast.error("All fields are required!");
+      return;
+    }
+
+    // 2️⃣ Check if nothing changed
+    const noChange =
+      updated.amount == editing.amount &&
+      updated.phone == editing.phone &&
+      updated.address == editing.address &&
+      updated.date == editing.date;
+
+    if (noChange) {
+      toast("No changes detected", { icon: "⚠️" });
+      return;
+    }
+
+    // 3️⃣ Perform update
+    api
+      .patch(`/my-bills/${editing._id}`, updated)
+      .then(() => {
+        setMyBills((prev) =>
+          prev.map((item) =>
+            item._id === editing._id ? { ...item, ...updated } : item
+          )
+        );
+
+        toast.success("Bill updated successfully!");
+        setEditing(null);
+      })
+      .catch(() => {
+        toast.error("Update failed. Try again!");
+      });
   };
 
   const handleDelete = () => {

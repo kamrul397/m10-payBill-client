@@ -17,6 +17,7 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Track current logged-in user
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (current) => {
       setUser(current);
@@ -25,13 +26,20 @@ export default function AuthProvider({ children }) {
     return () => unsub();
   }, []);
 
+  // Google login
   const loginGoogle = () => signInWithPopup(auth, googleProvider);
-  const signInEmail = (email, password) =>
+
+  // Email login (RENAMED for Login.jsx)
+  const loginEmail = (email, password) =>
     signInWithEmailAndPassword(auth, email, password);
+
+  // Register new user
   const registerUser = (name, email, password, photo) =>
     createUserWithEmailAndPassword(auth, email, password).then((res) =>
       updateProfile(res.user, { displayName: name, photoURL: photo })
     );
+
+  // Logout
   const logOut = () => signOut(auth);
 
   return (
@@ -40,7 +48,7 @@ export default function AuthProvider({ children }) {
         user,
         loading,
         loginGoogle,
-        signInEmail,
+        loginEmail, // ✔ NOW available for Login.jsx
         registerUser,
         logOut,
       }}

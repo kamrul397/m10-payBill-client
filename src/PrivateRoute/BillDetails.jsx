@@ -43,8 +43,14 @@ export default function BillDetails() {
       amount: bill.amount,
       date: new Date().toISOString().slice(0, 10),
       title: bill.title,
+      // 🔥 Add missing fields
+
+      image: bill.image,
+      category: bill.category,
+      location: bill.location,
     };
 
+    console.log(newBill);
     api
       .post("/my-bills", newBill)
       .then(() => {

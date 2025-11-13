@@ -7,12 +7,14 @@ export default function Register() {
   const { registerUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // Controlled form fields
   const [form, setForm] = useState({
     name: "",
     email: "",
     photo: "",
     password: "",
   });
+
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -21,6 +23,7 @@ export default function Register() {
   const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
+  /** Password validation */
   const validatePassword = (pass) => {
     if (pass.length < 6) return "Password must be at least 6 characters.";
     if (!/[A-Z]/.test(pass)) return "Must contain at least 1 uppercase letter.";
@@ -28,6 +31,7 @@ export default function Register() {
     return null;
   };
 
+  /** Strength meter */
   const strength = useMemo(() => {
     const p = form.password || "";
     let score = 0;
@@ -44,19 +48,32 @@ export default function Register() {
       Math.max(0, strength - 1)
     ] || "Very Weak";
 
+  /** Submit Handler */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     const pwdError = validatePassword(form.password);
-    if (pwdError) return setError(pwdError);
+    if (pwdError) {
+      setError(pwdError);
+      toast.error(pwdError);
+      return;
+    }
 
     try {
       setSubmitting(true);
+
       await registerUser(form.name, form.email, form.password, form.photo);
       toast.success("Account created successfully 🎉");
+
+      // Clear form
+      setForm({ name: "", email: "", photo: "", password: "" });
+
       navigate("/");
     } catch (err) {
-      setError("Registration failed. Try again.");
+      const msg = err.message || "Registration failed";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -67,11 +84,12 @@ export default function Register() {
       <div className="w-full max-w-md relative">
         {/* Glow */}
         <div className="absolute -inset-1 rounded-3xl blur-2xl bg-gradient-to-r from-indigo-300 via-cyan-300 to-blue-300 opacity-30 animate-pulse" />
+
         {/* Card */}
         <div className="relative rounded-2xl border border-white/60 bg-white/80 backdrop-blur-xl shadow-xl p-6 sm:p-8">
           <div className="text-center space-y-2">
             <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 grid place-items-center shadow-lg">
-              {/* spark icon */}
+              {/* icon */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 text-white"
@@ -96,10 +114,11 @@ export default function Register() {
               <input
                 type="text"
                 name="name"
+                value={form.name}
                 onChange={handleChange}
                 required
-                className="input input-bordered w-full rounded-lg border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                 placeholder="John Carter"
+                className="input input-bordered w-full rounded-lg border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-100"
               />
             </label>
 
@@ -111,14 +130,15 @@ export default function Register() {
               <input
                 type="email"
                 name="email"
+                value={form.email}
                 onChange={handleChange}
                 required
-                className="input input-bordered w-full rounded-lg border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                 placeholder="john@email.com"
+                className="input input-bordered w-full rounded-lg border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-100"
               />
             </label>
 
-            {/* Photo */}
+            {/* Photo URL */}
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-gray-700">
                 Photo URL (optional)
@@ -126,13 +146,14 @@ export default function Register() {
               <input
                 type="text"
                 name="photo"
+                value={form.photo}
                 onChange={handleChange}
-                className="input input-bordered w-full rounded-lg border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                 placeholder="https://…"
+                className="input input-bordered w-full rounded-lg border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-100"
               />
             </label>
 
-            {/* Password + eye + caps + strength */}
+            {/* Password */}
             <label className="block">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">
@@ -149,6 +170,7 @@ export default function Register() {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
+                  value={form.password}
                   onChange={handleChange}
                   onKeyUp={(e) =>
                     setCapsOn(
@@ -160,46 +182,40 @@ export default function Register() {
                   className="input input-bordered w-full rounded-lg border-gray-200 pr-12 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-shadow"
                 />
 
-                {/* Eye button with tooltip */}
+                {/* Eye button */}
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  aria-pressed={showPassword}
                   className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm rounded-full hover:bg-black/5"
                 >
-                  <span
-                    className="tooltip tooltip-left"
-                    data-tip={showPassword ? "Hide" : "Show"}
-                  >
-                    {showPassword ? (
-                      // eye-off
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M3 3l18 18" />
-                        <path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58M9.88 4.24A10.94 10.94 0 0 1 12 4c7 0 10 8 10 8a15.73 15.73 0 0 1-3.1 4.9M6.1 6.1A15.73 15.73 0 0 0 2 12s3 8 10 8a10.94 10.94 0 0 0 2.12-.24" />
-                      </svg>
-                    ) : (
-                      // eye
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    )}
-                  </span>
+                  {showPassword ? (
+                    // eye-off
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M3 3l18 18" />
+                      <path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58M9.88 4.24A10.94 10.94 0 0 1 12 4c7 0 10 8 10 8a15.73 15.73 0 0 1-3.1 4.9M6.1 6.1A15.73 15.73 0 0 0 2 12s3 8 10 8a10.94 10.94 0 0 0 2.12-.24" />
+                    </svg>
+                  ) : (
+                    // eye
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
                 </button>
               </div>
 
@@ -227,27 +243,26 @@ export default function Register() {
                   </span>
                   <span className="opacity-70">Tip: add numbers & symbols</span>
                 </div>
-              </div>
 
-              {/* Live requirement checks */}
-              <ul className="mt-3 space-y-1 text-sm">
-                <Req
-                  ok={form.password.length >= 6}
-                  text="At least 6 characters"
-                />
-                <Req
-                  ok={/[A-Z]/.test(form.password)}
-                  text="Contains an uppercase letter (A-Z)"
-                />
-                <Req
-                  ok={/[a-z]/.test(form.password)}
-                  text="Contains a lowercase letter (a-z)"
-                />
-                <Req
-                  ok={/\d/.test(form.password)}
-                  text="Contains a number (0-9)"
-                />
-              </ul>
+                <ul className="mt-3 space-y-1 text-sm">
+                  <Req
+                    ok={form.password.length >= 6}
+                    text="At least 6 characters"
+                  />
+                  <Req
+                    ok={/[A-Z]/.test(form.password)}
+                    text="Contains an uppercase letter (A-Z)"
+                  />
+                  <Req
+                    ok={/[a-z]/.test(form.password)}
+                    text="Contains a lowercase letter (a-z)"
+                  />
+                  <Req
+                    ok={/\d/.test(form.password)}
+                    text="Contains a number (0-9)"
+                  />
+                </ul>
+              </div>
             </label>
 
             {error && (
@@ -284,7 +299,7 @@ export default function Register() {
   );
 }
 
-/** Small requirement row with check/close icon */
+/** Requirement Row */
 function Req({ ok, text }) {
   return (
     <li
